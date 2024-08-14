@@ -3,10 +3,18 @@ package com.webservices.restfullApi.user;
 import java.net.URI;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+
+import static org.springframework.hateoas.server.mvc.WebMvcLinkBuilder.*;
+
 
 import org.springframework.context.MessageSource;
 import org.springframework.context.i18n.LocaleContext;
 import org.springframework.context.i18n.LocaleContextHolder;
+import org.springframework.hateoas.EntityModel;
+import org.springframework.hateoas.Link;
+
+import  org.springframework.hateoas.server.mvc.WebMvcLinkBuilder; 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -16,16 +24,20 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import aj.org.objectweb.asm.commons.Method;
 import jakarta.validation.Valid;
 
 @RestController
 public class UserController {
 
-	private UserDaoService userdaoservice ;
+//	private UserDaoService userdaoservice ;
+	
+	private UserRepository userRepository ; 
 
-	public UserController(UserDaoService userdaoservice) {
+	public UserController(UserRepository userRepository) {
 		super();
-		this.userdaoservice = userdaoservice;
+		// this.userdaoservice = userdaoservice;
+		this.userRepository = userRepository ; 
 	}
 	
 
@@ -34,27 +46,33 @@ public class UserController {
 	@GetMapping("/users")
 	public List<User> retrieveAllUsers(){
 		
-		return userdaoservice.getUsers(); 
+		return userRepository.findAll(); 
 	}
 	 
 	
 
 	        
 	@GetMapping("/users/{id}") 
-	public User  retrieveUser(@PathVariable int id ){
+	public EntityModel<User>  retrieveUser(@PathVariable int id ){
 		
-	User  user = userdaoservice.findOne(id);
+	Optional<User>  user = userRepository.findById(id); 
 	
-	   if(user == null)  throw new  UserNotFoundException("id : " + id);
+	   if(user.isEmpty())  throw new  UserNotFoundException("id : " + id);
 		
-	   return user ; 
+	   EntityModel<User> entityModel = EntityModel.of(user.get()); 
+	   
+	  WebMvcLinkBuilder link = linkTo(methodOn(this.getClass()).retrieveAllUsers()); 
+	  entityModel.add(link.withRel("all-users")); 
+	   
+	   
+	   return entityModel; 
 	}
 	
 
 	@PostMapping("/users")
 	public ResponseEntity<User>  createUser( @Valid @RequestBody User user) {
 		
-		User savedUser = userdaoservice.saveUser(user); 
+		User savedUser =  userRepository.save(user) ; 
 		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedUser.getId()).toUri(); 
 		return ResponseEntity.created(location).build(); 
 	}
@@ -64,7 +82,7 @@ public class UserController {
 	@DeleteMapping("/users/{id}")
 	public void  deleteUser(@PathVariable int id) {
 		
-         this.userdaoservice.deleteById(id); 
+         this.userRepository.deleteById(id); 
 	}
 
 
