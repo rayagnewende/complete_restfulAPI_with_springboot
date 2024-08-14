@@ -24,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
+import com.webservices.restfullApi.posts.Post;
+
 import aj.org.objectweb.asm.commons.Method;
 import jakarta.validation.Valid;
 
@@ -84,6 +86,17 @@ public class UserController {
 		
          this.userRepository.deleteById(id); 
 	}
+	
+	
+	@GetMapping("/users/{id}/posts")
+	public List<Post> retrieveAllUPosts(@PathVariable int id){
+		
+		Optional<User> user = userRepository.findById(id); 
+		   if(user.isEmpty())  throw new  UserNotFoundException("id : " + id);
+
+		return user.get().getPosts(); 
+		
+		}
 
 
 	/*

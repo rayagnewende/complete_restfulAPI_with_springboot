@@ -1,10 +1,15 @@
 package com.webservices.restfullApi.user;
 
 import java.time.LocalDate;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.webservices.restfullApi.posts.Post;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
 import jakarta.validation.constraints.Past;
 import jakarta.validation.constraints.Size;
 
@@ -21,6 +26,12 @@ public class User {
 	
 	@Past
 	private  LocalDate birthday ;
+	
+	@OneToMany(mappedBy = "user")
+	@JsonIgnore
+	private List<Post> posts ; 
+	
+	
 	
 	public User() {
 		
@@ -49,6 +60,14 @@ public class User {
 	public LocalDate getBirthday() {
 		return birthday;
 	}
+	public List<Post> getPosts() {
+		return posts;
+	}
+
+	public void setPosts(List<Post> posts) {
+		this.posts = posts;
+	}
+
 	public void setBirthday(LocalDate birthday) {
 		this.birthday = birthday;
 	}
