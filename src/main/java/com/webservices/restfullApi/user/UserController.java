@@ -25,6 +25,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import com.webservices.restfullApi.posts.Post;
+import com.webservices.restfullApi.posts.PostRepository;
 
 import aj.org.objectweb.asm.commons.Method;
 import jakarta.validation.Valid;
@@ -32,14 +33,16 @@ import jakarta.validation.Valid;
 @RestController
 public class UserController {
 
-//	private UserDaoService userdaoservice ;
 	
 	private UserRepository userRepository ; 
+	private PostRepository postRepository ; 
 
-	public UserController(UserRepository userRepository) {
+
+	public UserController(UserRepository userRepository, PostRepository postRepository) {
 		super();
-		// this.userdaoservice = userdaoservice;
 		this.userRepository = userRepository ; 
+		this.postRepository = postRepository ; 
+
 	}
 	
 
@@ -99,24 +102,21 @@ public class UserController {
 		}
 
 
-	/*
-	@PostMapping("/hello") 
-	public ResponseEntity<User> createHello(@RequestBody User user ){
 	
-		URI  location = ServletUriComponentsBuilder.fromCurrentRequest().path("/id}").buildAndExpand(user.getId()).toUri(); 
-		return ResponseEntity.created(location).build();
+	@PostMapping("/users/{id}/posts")
+	public ResponseEntity<Post>  createUserPosts( @PathVariable int id, @Valid @RequestBody Post post) {
+		
+		Optional<User> user = userRepository.findById(id); 
+		   if(user.isEmpty())  throw new  UserNotFoundException("id : " + id);
+		
+		Post savedPost =  postRepository.save(post); 
+		
+		URI location = ServletUriComponentsBuilder.fromCurrentRequest().path("/{id}").buildAndExpand(savedPost.getId()).toUri(); 
+		return ResponseEntity.created(location).build(); 
+		
+		
 	}
 	
-
-	@PostMapping("/users") 
-	public ResponseEntity<User>  createUser(@RequestBody User user ){
-	
-		User savedUser = userdaoservice.saveUser(user); 
-		URI  location = ServletUriComponentsBuilder.fromCurrentRequest().path("/id}").buildAndExpand(savedUser.getId()).toUri(); 
-		return ResponseEntity.created(location).build(); 
-	
-	}   */
-
 	
 
 	
